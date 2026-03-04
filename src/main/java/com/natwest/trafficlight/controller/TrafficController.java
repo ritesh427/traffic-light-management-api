@@ -2,32 +2,29 @@ package com.natwest.trafficlight.controller;
 
 import com.natwest.trafficlight.model.Direction;
 import com.natwest.trafficlight.model.LightColour;
+import com.natwest.trafficlight.model.TrafficEvent;
 import com.natwest.trafficlight.model.TrafficStatus;
 import com.natwest.trafficlight.repository.TrafficRepository;
 import com.natwest.trafficlight.service.TrafficService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/traffic")
 public class TrafficController {
 
     private final TrafficService trafficService;
-    private final TrafficRepository trafficRepository;
 
     public TrafficController(TrafficService trafficService,TrafficRepository trafficRepository){
         this.trafficService = trafficService;
-        this.trafficRepository = trafficRepository;
     }
 
     @PostMapping("/change")
-    public String changeLight(@RequestParam Direction direction, @RequestParam LightColour lightColour){
+    public ResponseEntity<String> changeLight(@RequestParam Direction direction, @RequestParam LightColour lightColour){
         trafficService.changeLight(direction,lightColour);
-        return "Light colour is set for given direction.";
-    }
-
-    @GetMapping("/test")
-    public void test(){
-        trafficService.print();
+        return ResponseEntity.ok("Light updated");
     }
 
     @GetMapping("/status")
@@ -35,20 +32,20 @@ public class TrafficController {
         return trafficService.getStatus();
     }
 
-    @GetMapping("/pause")
-    public String getPause(){
+    @PostMapping("/pause")
+    public ResponseEntity<String> getPause(){
         trafficService.pause();
-        return "System is Paused.";
+        return ResponseEntity.ok("System is Paused.");
     }
 
-    @GetMapping("/resume")
-    public String getResume(){
+    @PostMapping("/resume")
+    public ResponseEntity<String> getResume(){
         trafficService.resume();
-        return "System is Resumed.";
+        return ResponseEntity.ok("System is Resumed.");
     }
 
     @GetMapping("/history")
-    public Object getHistory() {
-        return trafficRepository.getAllEvents();
+    public List<TrafficEvent> getHistory() {
+        return trafficService.getAllEvents();
     }
 }
