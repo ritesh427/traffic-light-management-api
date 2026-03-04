@@ -1,4 +1,4 @@
-package com.natwest.com.traffic_light_controller_api;
+package com.natwest.trafficlight;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

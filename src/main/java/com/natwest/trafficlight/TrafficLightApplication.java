@@ -1,13 +1,13 @@
-package com.natwest.com.traffic_light_controller_api;
+package com.natwest.trafficlight;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Application {
+public class TrafficLightApplication  {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(TrafficLightApplication .class, args);
 	}
 
 }
