@@ -4,7 +4,6 @@ import com.natwest.trafficlight.model.Direction;
 import com.natwest.trafficlight.model.LightColour;
 import com.natwest.trafficlight.model.TrafficEvent;
 import com.natwest.trafficlight.model.TrafficStatus;
-import com.natwest.trafficlight.repository.TrafficRepository;
 import com.natwest.trafficlight.service.TrafficService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +16,7 @@ public class TrafficController {
 
     private final TrafficService trafficService;
 
-    public TrafficController(TrafficService trafficService, TrafficRepository trafficRepository) {
+    public TrafficController(TrafficService trafficService) {
         this.trafficService = trafficService;
     }
 

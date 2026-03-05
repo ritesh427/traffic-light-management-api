@@ -15,14 +15,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service
 public class TrafficService {
     private final Map<Direction, LightColour> lights = new EnumMap<>(Direction.class);
-
-    private boolean paused = false;
-
-    private int currentPhase = 0;
-
     private final TrafficRepository trafficRepository;
-
     private final ReentrantLock lock = new ReentrantLock();
+    private boolean paused = false;
+    private int currentPhase = 0;
 
     public TrafficService(TrafficRepository trafficRepository) {
         log.info("Initializing traffic lights: setting ALL directions to RED on system startup");
@@ -34,25 +30,28 @@ public class TrafficService {
     }
 
     public void changeLight(Direction direction, LightColour lightColour) {
+        if (paused) {
+            log.info("System is paused.");
+            throw new IllegalStateException("System is paused.");
+        }
+        if (direction == null || lightColour == null) {
+            log.warn("Invalid light change request: direction={}, colour={}", direction, lightColour);
+            throw new IllegalArgumentException("Direction and light colour must be provided.");
+        }
         lock.lock();
         try {
-            if (paused) {
-                log.info("System is paused.");
-                throw new IllegalStateException("System is paused.");
-            }
-            if (direction == null || lightColour == null) {
-                log.warn("Invalid light change request: direction={}, colour={}", direction, lightColour);
-                throw new IllegalArgumentException("Invalid Input.");
+            LightColour colour = lights.get(direction);
+            if (colour == lightColour) {
+                log.warn("Traffic light already in requested state for : direction={}, colour={}", direction, lightColour);
+                throw new IllegalStateException("Traffic light already in requested state.");
             }
             if (lightColour == LightColour.GREEN) {
                 setAllRed();
             }
             if (direction == Direction.NORTH || direction == Direction.SOUTH) {
-                lights.put(Direction.NORTH, lightColour);
-                lights.put(Direction.SOUTH, lightColour);
+                setNorthAndSouth(lightColour);
             } else if (direction == Direction.EAST || direction == Direction.WEST) {
-                lights.put(Direction.EAST, lightColour);
-                lights.put(Direction.WEST, lightColour);
+                setEastAndWest(lightColour);
             }
             log.info("Traffic light state change : direction={}, colour={}", direction, lightColour);
             trafficRepository.addEvent(new TrafficEvent(EventType.LIGHT_CHANGE, new EnumMap<>(lights)));
@@ -83,34 +82,33 @@ public class TrafficService {
         return trafficRepository.getAllEvents();
     }
 
-    public void emergencyMode(Direction direction){
+    public void emergencyMode(Direction direction) {
         lock.lock();
         try {
-            if (direction==null){
+            if (direction == null) {
                 throw new IllegalArgumentException("Invalid direction for emergency.");
             }
             setAllRed();
             if (direction == Direction.NORTH || direction == Direction.SOUTH) {
-                lights.put(Direction.NORTH, LightColour.GREEN);
-                lights.put(Direction.SOUTH, LightColour.GREEN);
+                setNorthAndSouth(LightColour.GREEN);
             } else {
-                lights.put(Direction.EAST, LightColour.GREEN);
-                lights.put(Direction.WEST, LightColour.GREEN);
+                setEastAndWest(LightColour.GREEN);
             }
             trafficRepository.addEvent(new TrafficEvent(EventType.EMERGENCY_MODE, new EnumMap<>(lights)));
         } finally {
             lock.unlock();
         }
     }
+
     @Scheduled(fixedRate = 30000)
-    public void schedule(){
+    public void runTrafficCycle() {
         if (paused) {
             log.info("Scheduler paused - skipping cycle");
             return;
-        };
+        }
         lock.lock();
-        try{
-            switch (currentPhase){
+        try {
+            switch (currentPhase) {
                 case 0:
                     setNorthAndSouth(LightColour.GREEN);
                     log.info("Lights changed: North-South → GREEN");
@@ -129,39 +127,19 @@ public class TrafficService {
                     break;
             }
             currentPhase = (currentPhase + 1) % 4;
-            trafficRepository.addEvent(new TrafficEvent(EventType.LIGHT_CHANGE,new EnumMap<>(lights)));
+            trafficRepository.addEvent(new TrafficEvent(EventType.LIGHT_CHANGE, new EnumMap<>(lights)));
         } finally {
             lock.unlock();
         }
     }
 
-    private void setNorthAndSouth(LightColour colour) {
-        setAllRed();
-        lights.put(Direction.NORTH, colour);
-        lights.put(Direction.SOUTH, colour);
-    }
-    private void setEastAndWest(LightColour colour) {
-        setAllRed();
-        lights.put(Direction.EAST, colour);
-        lights.put(Direction.WEST, colour);
-    }
-
-    private void setAllRed(){
-        lights.replaceAll((d,v)->LightColour.RED);
-    }
-
-    private void setAllGreen(){
-        lights.replaceAll((d,v)->LightColour.GREEN);
-    }
-
-    @Scheduled(fixedRate = 60000) // it will check every 5 min.
-    public void nightModeScheduler(){
+    @Scheduled(fixedRate = 60000) //checks every 1 minute
+    public void nightModeScheduler() {
         int currentHour = java.time.LocalTime.now().getHour();
         lock.lock();
-        try{
+        try {
             if (currentHour == 23 && !paused) {
                 log.info("Traffic system paused automatically at 11 PM.");
-                setAllGreen();
                 paused = true;
                 trafficRepository.addEvent(new TrafficEvent(EventType.SYSTEM_PAUSED));
 
@@ -174,5 +152,21 @@ public class TrafficService {
         } finally {
             lock.unlock();
         }
+    }
+
+    private void setNorthAndSouth(LightColour colour) {
+        setAllRed();
+        lights.put(Direction.NORTH, colour);
+        lights.put(Direction.SOUTH, colour);
+    }
+
+    private void setEastAndWest(LightColour colour) {
+        setAllRed();
+        lights.put(Direction.EAST, colour);
+        lights.put(Direction.WEST, colour);
+    }
+
+    private void setAllRed() {
+        lights.replaceAll((d, v) -> LightColour.RED);
     }
 }
