@@ -150,4 +150,29 @@ public class TrafficService {
         lights.replaceAll((d,v)->LightColour.RED);
     }
 
+    private void setAllGreen(){
+        lights.replaceAll((d,v)->LightColour.GREEN);
+    }
+
+    @Scheduled(fixedRate = 60000) // it will check every 5 min.
+    public void nightModeScheduler(){
+        int currentHour = java.time.LocalTime.now().getHour();
+        lock.lock();
+        try{
+            if (currentHour == 23 && !paused) {
+                log.info("Traffic system paused automatically at 11 PM.");
+                setAllGreen();
+                paused = true;
+                trafficRepository.addEvent(new TrafficEvent(EventType.SYSTEM_PAUSED));
+
+            }
+            if (currentHour == 5 && paused) {
+                log.info("Traffic system resumed automatically at 05 AM.");
+                paused = false;
+                trafficRepository.addEvent(new TrafficEvent(EventType.SYSTEM_RESUMED));
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
 }
