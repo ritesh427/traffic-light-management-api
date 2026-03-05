@@ -52,6 +52,6 @@ public class TrafficController {
     @PostMapping("/emergency")
     public ResponseEntity<String> emergencyMode(@RequestParam Direction direction){
         trafficService.emergencyMode(direction);
-        return ResponseEntity.ok("Emergency mode activated for" + direction);
+        return ResponseEntity.ok("Emergency mode activated for : " + direction);
     }
 }
