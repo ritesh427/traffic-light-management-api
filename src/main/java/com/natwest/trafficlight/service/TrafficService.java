@@ -33,7 +33,7 @@ public class TrafficService {
                 throw new IllegalStateException("System is paused.");
             }
             if (direction == null || lightColour == null) {
-                throw new IllegalStateException("Invalid Input.");
+                throw new IllegalArgumentException("Invalid Input.");
             }
             if (lightColour == LightColour.GREEN) {
                 lights.replaceAll((d, v) -> LightColour.RED);
