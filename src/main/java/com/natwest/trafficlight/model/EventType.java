@@ -4,5 +4,6 @@ public enum EventType {
     SYSTEM_STARTED,
     LIGHT_CHANGE,
     SYSTEM_PAUSED,
-    SYSTEM_RESUMED
+    SYSTEM_RESUMED,
+    EMERGENCY_MODE
 }

@@ -12,12 +12,13 @@ public class TrafficEvent {
     private final Map<Direction, LightColour> state;
     private final LocalDateTime time;
 
-    public TrafficEvent(EventType type, Map<Direction, LightColour> state){
+    public TrafficEvent(EventType type, Map<Direction, LightColour> state) {
         this.type = type;
         this.time = LocalDateTime.now();
         this.state = state;
     }
-    public TrafficEvent(EventType type){
+
+    public TrafficEvent(EventType type) {
         this.type = type;
         this.time = LocalDateTime.now();
         this.state = null;

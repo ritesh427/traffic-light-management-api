@@ -8,11 +8,13 @@ import java.util.List;
 
 @Repository
 public class TrafficRepository {
-    private List<TrafficEvent> events =  new ArrayList<>();
-    public void addEvent(TrafficEvent event){
+    private final List<TrafficEvent> events = new ArrayList<>();
+
+    public void addEvent(TrafficEvent event) {
         events.add(event);
     }
-    public List<TrafficEvent> getAllEvents(){
+
+    public List<TrafficEvent> getAllEvents() {
         return events;
     }
 }

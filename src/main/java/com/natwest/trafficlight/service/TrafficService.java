@@ -11,14 +11,15 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class TrafficService {
-    private Map<Direction,LightColour> lights = new EnumMap<>(Direction.class);
+    private final Map<Direction, LightColour> lights = new EnumMap<>(Direction.class);
 
     private boolean paused = false;
 
     private final TrafficRepository trafficRepository;
 
     private final ReentrantLock lock = new ReentrantLock();
-    public TrafficService(TrafficRepository trafficRepository){
+
+    public TrafficService(TrafficRepository trafficRepository) {
         this.trafficRepository = trafficRepository;
         for (Direction direction : Direction.values()) {
             lights.put(direction, LightColour.RED);
@@ -26,7 +27,7 @@ public class TrafficService {
         trafficRepository.addEvent(new TrafficEvent(EventType.SYSTEM_STARTED));
     }
 
-    public void changeLight(Direction direction, LightColour lightColour){
+    public void changeLight(Direction direction, LightColour lightColour) {
         lock.lock();
         try {
             if (paused) {
@@ -45,26 +46,48 @@ public class TrafficService {
                 lights.put(Direction.EAST, lightColour);
                 lights.put(Direction.WEST, lightColour);
             }
-            trafficRepository.addEvent(new TrafficEvent(EventType.LIGHT_CHANGE,new EnumMap<>(lights)));
+            trafficRepository.addEvent(new TrafficEvent(EventType.LIGHT_CHANGE, new EnumMap<>(lights)));
         } finally {
             lock.unlock();
         }
     }
-    public TrafficStatus getStatus(){
+
+    public TrafficStatus getStatus() {
         return new TrafficStatus(lights);
     }
 
-    public void pause(){
+    public void pause() {
         paused = true;
         trafficRepository.addEvent(new TrafficEvent(EventType.SYSTEM_PAUSED));
     }
 
-    public void resume(){
+    public void resume() {
         paused = false;
         trafficRepository.addEvent(new TrafficEvent(EventType.SYSTEM_RESUMED));
     }
 
     public List<TrafficEvent> getAllEvents() {
-      return trafficRepository.getAllEvents();
+        return trafficRepository.getAllEvents();
     }
+
+    public void emergencyMode(Direction direction){
+        lock.lock();
+        try {
+            if (direction==null){
+                throw new IllegalArgumentException("Invalid direction for emergency.");
+            }
+            lights.replaceAll((d, v) -> LightColour.RED);
+            if (direction == Direction.NORTH || direction == Direction.SOUTH) {
+                lights.put(Direction.NORTH, LightColour.GREEN);
+                lights.put(Direction.SOUTH, LightColour.GREEN);
+            } else {
+                lights.put(Direction.EAST, LightColour.GREEN);
+                lights.put(Direction.WEST, LightColour.GREEN);
+            }
+            trafficRepository.addEvent(new TrafficEvent(EventType.EMERGENCY_MODE, new EnumMap<>(lights)));
+        } finally {
+            lock.unlock();
+        }
+    }
+
 }

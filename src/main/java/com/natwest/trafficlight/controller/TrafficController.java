@@ -17,29 +17,29 @@ public class TrafficController {
 
     private final TrafficService trafficService;
 
-    public TrafficController(TrafficService trafficService,TrafficRepository trafficRepository){
+    public TrafficController(TrafficService trafficService, TrafficRepository trafficRepository) {
         this.trafficService = trafficService;
     }
 
     @PostMapping("/change")
-    public ResponseEntity<String> changeLight(@RequestParam Direction direction, @RequestParam LightColour lightColour){
-        trafficService.changeLight(direction,lightColour);
+    public ResponseEntity<String> changeLight(@RequestParam Direction direction, @RequestParam LightColour lightColour) {
+        trafficService.changeLight(direction, lightColour);
         return ResponseEntity.ok("Light updated");
     }
 
     @GetMapping("/status")
-    public TrafficStatus getStatus(){
+    public TrafficStatus getStatus() {
         return trafficService.getStatus();
     }
 
     @PostMapping("/pause")
-    public ResponseEntity<String> getPause(){
+    public ResponseEntity<String> getPause() {
         trafficService.pause();
         return ResponseEntity.ok("System is Paused.");
     }
 
     @PostMapping("/resume")
-    public ResponseEntity<String> getResume(){
+    public ResponseEntity<String> getResume() {
         trafficService.resume();
         return ResponseEntity.ok("System is Resumed.");
     }
@@ -47,5 +47,11 @@ public class TrafficController {
     @GetMapping("/history")
     public List<TrafficEvent> getHistory() {
         return trafficService.getAllEvents();
+    }
+
+    @PostMapping("/emergency")
+    public ResponseEntity<String> emergencyMode(@RequestParam Direction direction){
+        trafficService.emergencyMode(direction);
+        return ResponseEntity.ok("Emergency mode activated for" + direction);
     }
 }
