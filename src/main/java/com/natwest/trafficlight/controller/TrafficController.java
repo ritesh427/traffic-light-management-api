@@ -27,8 +27,8 @@ public class TrafficController {
     }
 
     @GetMapping("/status")
-    public TrafficStatus getStatus() {
-        return trafficService.getStatus();
+    public ResponseEntity<TrafficStatus> getStatus() {
+        return ResponseEntity.ok(trafficService.getStatus());
     }
 
     @PostMapping("/pause")
@@ -44,8 +44,8 @@ public class TrafficController {
     }
 
     @GetMapping("/history")
-    public List<TrafficEvent> getHistory() {
-        return trafficService.getAllEvents();
+    public ResponseEntity<List<TrafficEvent>> getHistory() {
+        return ResponseEntity.ok(trafficService.getAllEvents());
     }
 
     @PostMapping("/emergency")
