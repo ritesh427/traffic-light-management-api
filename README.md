@@ -28,6 +28,8 @@ This ensures:
 * **East and West move together**
 * Conflicting directions are never green simultaneously.
 
+![img.png](img.png)
+
 The phases rotate automatically using a **scheduler**.
 
 ---
